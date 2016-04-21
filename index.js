@@ -1,26 +1,23 @@
 'use strict';
 
 const Rx = require('rx');
-const spawn = require('child_process').spawn;
+const exec = require('child_process').exec;
 const trace = {};
 
 trace.lookup = (hostname, callback) => {
-	const cp = spawn('traceroute', [hostname]);
 	let result = '';
 
-	cp.stdout.on('data', (data) => {
-		console.log(`data: ${data}`);
-		result += data;
+	const source = Rx.Observable.create((observer) => {
+		exec('traceroute paypal.com', (error, stdout, stderr) => {
+			observer.onNext(stdout);
+		});
+	});
+	source.subscribe((routeInfo) => {
+		console.log(getIp(cleanLines(splitByLine(routeInfo))));
 	});
 
-	cp.stderr.on('data', (data) => {
-		console.log(`stderr: ${data}`);
-	});
+	source.dispose();
 
-	cp.on('close', (code) => {
-
-		console.log((getIp(cleanLines(splitByLine(result)))).split(','));
-	});
 };
 
 function splitByLine(result) {
