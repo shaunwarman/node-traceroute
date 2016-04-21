@@ -5,13 +5,12 @@ const exec = require('child_process').exec;
 const trace = {};
 
 trace.lookup = (hostname, callback) => {
-	let result = '';
-
 	const source = Rx.Observable.create((observer) => {
 		exec('traceroute paypal.com', (error, stdout, stderr) => {
 			observer.onNext(stdout);
 		});
 	});
+
 	source.subscribe((routeInfo) => {
 		console.log(getIp(cleanLines(splitByLine(routeInfo))));
 	});
