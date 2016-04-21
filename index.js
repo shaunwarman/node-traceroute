@@ -1,20 +1,23 @@
-var spawn = require('child_process').spawn;
-var trace = {};
+'use strict';
 
-trace.lookup = function (hostname, callback) {
-	var cp = spawn('traceroute', [hostname]);
-	var result = '';
+const Rx = require('rx');
+const spawn = require('child_process').spawn;
+const trace = {};
 
-	cp.stdout.on('data', function (data) {
+trace.lookup = (hostname, callback) => {
+	const cp = spawn('traceroute', [hostname]);
+	let result = '';
+
+	cp.stdout.on('data', (data) => {
+		console.log(`data: ${data}`);
 		result += data;
 	});
 
-	cp.stderr.on('data', function (data) {
-		console.log('stderr: ' + data);
+	cp.stderr.on('data', (data) => {
+		console.log(`stderr: ${data}`);
 	});
 
-	cp.on('close', function (code) {
-		console.log('child process exited with code ' + code);
+	cp.on('close', (code) => {
 
 		console.log((getIp(cleanLines(splitByLine(result)))).split(','));
 	});
@@ -25,13 +28,13 @@ function splitByLine(result) {
 }
 
 function cleanLines(eachLine) {
-	return eachLine.filter(function (line) {
+	return eachLine.filter((line) => {
 		return (line.indexOf('*') === -1);
 	});
 }
 
 function getIp(cleanLines) {
-	return cleanLines.map(function (cleanLine) {
+	return cleanLines.map((cleanLine) => {
 		return cleanLine.slice(cleanLine.indexOf('(') + 1, cleanLine.indexOf(')'));
 	});
 }
